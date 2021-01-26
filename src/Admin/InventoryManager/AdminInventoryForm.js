@@ -93,7 +93,7 @@ class Form extends React.Component {
             current_quantity: "",
             min_quantity: "",
         })
-
+        window.location.reload();
     }
 
     render() {
