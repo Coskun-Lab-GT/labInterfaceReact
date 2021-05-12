@@ -11,6 +11,12 @@
     margin-bottom: 30px;
 }
 
+.login {
+  display: flex;
+  flex-direction: column;
+  margin: 0px 15px -45px 15px;
+}
+
 .tab {
   text-decoration: none;
   color: #414141;  

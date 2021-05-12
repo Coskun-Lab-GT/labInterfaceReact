@@ -12,13 +12,15 @@ class Form extends React.Component {
             user: "",
             students: [],
             items: [],
+            done: false
         }
         this.handleChange = this.handleChange.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
     }
 
     componentDidMount() {
-        fetch(API + '/QuickOrder/inventory/')
+        setTimeout(() => {
+            fetch(API + '/QuickOrder/inventory/')
             .then((response) => response.json())
             .then(data => {
                 let inventory = data.map(item => {
@@ -27,7 +29,8 @@ class Form extends React.Component {
                 this.setState({
                     items: [{value: '', display: ''}].concat(inventory)
                 })
-            }).catch(error => {
+            })
+            .catch(error => {
                 console.log(error);
             })
 
@@ -40,9 +43,17 @@ class Form extends React.Component {
                 this.setState({
                     students: [{value: '', display: ''}].concat(users)
                 })
-            }).catch(error => {
+            })
+            .catch(error => {
                 console.log(error);
             })
+            setTimeout(() => {
+                this.setState({
+                    done: true,
+                })
+            }, 600)
+        }, 700)
+        
     }
 
     handleChange(event) {
@@ -71,11 +82,15 @@ class Form extends React.Component {
 
     render() {
         return(
+            <div>
+            {!this.state.done ? <h2></h2> : 
             <FormComponent 
             handleChange = {this.handleChange}
             handleSubmit = {this.handleSubmit}
             data = {this.state}
-        />
+            />
+            }
+            </div>
         )
     }
 

@@ -13,6 +13,7 @@ class UserTable extends React.Component {
             selectedQuery: "",
             selectedButton: "",
             user: {},
+            done: false
         }
         this.compareBy = this.compareBy.bind(this)
         this.sortBy = this.sortBy.bind(this)
@@ -26,15 +27,25 @@ class UserTable extends React.Component {
         let data = {
             method: 'GET',
         }
-        fetch(userLink, data)
+        setTimeout(() => {
+            fetch(userLink, data)
             .then(response => response.json())
             .then(response => {
                 this.setState({
                     users: [response],
                 })
-            }).catch(error => {
+            })
+            .then(
+                setTimeout(() => {
+                    this.setState({
+                        done: true,
+                    })
+                }, 600))
+            .catch(error => {
                 console.log(error)
             })
+        }, 700)
+        
     }
 
     compareBy(key, sort) {
@@ -81,7 +92,7 @@ class UserTable extends React.Component {
         }
 
         if (button === 'delete' && this.state.selectedQuery !== "") {
-            const link = {API}.API+ '/UserManagement/delete-User/?user_id=' + this.state.selectedQuery
+            const link = {API}.API+ '/UserManagement/soft-delete-User/?user_id=' + this.state.selectedQuery
             let data = {
                 method: 'DELETE',
             }
@@ -104,6 +115,8 @@ class UserTable extends React.Component {
     render() {
         return (
             <div>
+                {!this.state.done ? <h2></h2> : 
+                <div>
                 <div className = "admin-buttons">
                     <Link to = "/admin/inventory">Inventory</Link>
                     <Link to = "/admin/users">Users</Link>
@@ -174,7 +187,8 @@ class UserTable extends React.Component {
                         </table>
                     </div>
                 </form>
-
+                </div>
+                }
             </div>
         )
     }

@@ -26,15 +26,25 @@ class InventoryTable extends React.Component {
         let data = {
             method: 'GET',
         }
-        fetch(inventoryLink, data)
+        setTimeout(() => {
+            fetch(inventoryLink, data)
             .then(response => response.json())
             .then(response => {
                 this.setState({
                     items: [response],
                 })
-            }).catch(error => {
+            })
+            .then(
+                setTimeout(() => {
+                    this.setState({
+                        done: true,
+                    })
+                }, 600))
+            .catch(error => {
                 console.log(error)
             })
+        }, 700)
+
     }
 
     compareBy(key, sort) {
@@ -104,6 +114,8 @@ class InventoryTable extends React.Component {
     render() {
         return (
             <div>
+            {!this.state.done ? <h2></h2> : 
+            <div>
                 <div className = "admin-buttons">
                     <Link to = "/admin/inventory">Inventory</Link>
                     <Link to = "/admin/users">Users</Link>
@@ -170,6 +182,8 @@ class InventoryTable extends React.Component {
                         </table>                
                     </div>
                 </form>
+            </div>
+            }
             </div>
         )
     }

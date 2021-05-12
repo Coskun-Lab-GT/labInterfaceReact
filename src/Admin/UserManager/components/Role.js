@@ -9,7 +9,7 @@ function Role(props) {
                 name="role"
                 value = {props.role}
                 onChange = {props.handleChange}
-                // required
+                required
                 >
                 <option value="Student">Student</option>
                 <option value="Admin">Admin</option>

@@ -1,1 +1,1 @@
-export const API =  'https://sou6g8iib0.execute-api.us-west-1.amazonaws.com/dev'
+export const API =  'https://yw6hyffzh6.execute-api.us-east-1.amazonaws.com/dev'

@@ -7,28 +7,37 @@ class Inventory extends React.Component {
         super()
         this.state = {
             items: [],
-            loading: false
+            done: false
         }
         this.compareBy = this.compareBy.bind(this)
         this.sortBy = this.sortBy.bind(this)
     }
 
     componentDidMount() {
-        this.setState({loading: true})
         let inventoryLink = API + '/QuickOrder/inventory/'
         let data = {
             method: 'GET',
         }
-        fetch(inventoryLink, data)
+        setTimeout(() => {
+            fetch(inventoryLink, data)
             .then(response => response.json())
             .then(response => {
                 this.setState({
                     items: [response],
                 })
-            }).catch(error => {
+            })
+            .then(
+                setTimeout(() => {
+                    this.setState({
+                        done: true,
+                    })
+                }, 600))
+            .catch(error => {
                 console.log(error)
             })
 
+        }, 700)
+        
     }
 
     compareBy(key, sort) {
@@ -67,6 +76,8 @@ class Inventory extends React.Component {
     render() {
         return (
             <div>
+                {!this.state.done ? <h2></h2> : 
+                <div>
                 <div className = "inventory-buttons">
                     <Link to = "/inventory/quickOrder">Quick Order</Link>
                     <Link to = "/inventory/generalOrder">General Order</Link>
@@ -124,6 +135,8 @@ class Inventory extends React.Component {
                     </table>
                 
                 </div>
+                </div>
+                }
             </div>
         )
     }

@@ -13,27 +13,22 @@ class Form extends React.Component {
             item_name: "",
             current_quantity: "",
             min_quantity: "",
-            page_type: page_type
+            page_type: page_type,
+            done: false
     }
         this.handleChange = this.handleChange.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
     }
 
-    async componentDidMount() {
-        if (this.state.page_type === "Add") {
-            this.setState({
-                item_id: "",
-                item_name: "",
-                current_quantity: "",
-                min_quantity: "",
-            })
-        } else {
+    componentDidMount() {
+        if (this.state.page_type === "Update") {
             const link = API + '/QuickOrder/get-item/' + selected_id + '/'
             let data = {
                 method: 'GET',
             }
 
-            await fetch(link, data)
+            setTimeout(() => {
+                fetch(link, data)
                 .then(response => response.json())
                 .then(response => {
                     this.setState({
@@ -42,9 +37,25 @@ class Form extends React.Component {
                         current_quantity: response.current_quantity,
                         min_quantity: response.min_quantity,
                     })
-                }).catch(error => {
+                })
+                .then(
+                    setTimeout(() => {
+                        this.setState({done: true})
+                    }, 600))
+                .catch(error => {
                     console.log(error)
                 })
+            }, 700)
+
+        } else {
+            this.setState({
+                item_id: "",
+                item_name: "",
+                current_quantity: "",
+                min_quantity: "",
+                done: true,
+                page_type: "Add"
+            })
         }
     }
 
@@ -98,11 +109,16 @@ class Form extends React.Component {
 
     render() {
         return(
+            <div>
+            {!this.state.done ? <h2></h2> : 
             <FormComponent
             handleChange = {this.handleChange}
             handleSubmit = {this.handleSubmit}
             data = {this.state}
-        />
+            />
+            }
+            </div>
+
         )
     }
 

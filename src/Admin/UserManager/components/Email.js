@@ -10,7 +10,7 @@ function Email(props) {
                 name="email"
                 value = {props.email}
                 onChange = {props.handleChange}
-                // required
+                required
             />
         </div>
     )

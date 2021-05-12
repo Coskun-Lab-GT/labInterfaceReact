@@ -11,3 +11,15 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+.e-appointment-details .e-time {
+  color:#FFFAFA !important;
+}
+
+.e-appointment-details .e-location {
+  color:#FFFAFA !important;
+} 
+.e-appointment-details .e-subject{
+  color:#FFFAFA !important;
+} 

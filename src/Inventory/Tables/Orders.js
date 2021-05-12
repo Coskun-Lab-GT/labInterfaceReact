@@ -9,7 +9,7 @@ class Orders extends React.Component {
         this.state = {
             order: [],
             filtered: [],
-            loading: false
+            done: false
         }
         this.compareBy = this.compareBy.bind(this)
         this.sortBy = this.sortBy.bind(this)
@@ -18,22 +18,30 @@ class Orders extends React.Component {
     }
 
     componentDidMount() {
-        this.setState({loading: true})
         let link = API + '/QuickOrder/orders/'
         let data = {
             method: 'GET',
         }
-        fetch(link, data)
+        setTimeout(() => {
+            fetch(link, data)
             .then(response => response.json())
             .then(response => {
                 this.setState({
                     order: [response],
                     filtered: [response],
-                    loading: false
                 })
-            }).catch(error => {
+            })
+            .then(
+                setTimeout(() => {
+                    this.setState({
+                        done: true,
+                    })
+                }, 600))
+            .catch(error => {
                 console.log(error);
             })
+        }, 700)
+
     }
 
     compareBy(key, sort) {
@@ -96,7 +104,8 @@ class Orders extends React.Component {
     render() {
         return (
             <div>
-
+                {!this.state.done ? <h2></h2> : 
+                <div>
                 <div className = "heading">
                     <h1 className = "title">Order History</h1>
                     <div className = "arrange">
@@ -161,7 +170,8 @@ class Orders extends React.Component {
 
                     </table>
                 </div>
-
+                </div>
+                }
             </div>
         )
     }

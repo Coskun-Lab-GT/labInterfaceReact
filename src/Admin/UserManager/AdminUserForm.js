@@ -13,24 +13,15 @@ class Form extends React.Component {
             email: "",
             role: "",
             phone_number: "",
-            token: "Token1",
-            first_time: false,
-            is_deleted: false,
-            page_type: page_type
+            page_type: page_type,
+            done: false
         }
         this.handleChange = this.handleChange.bind(this)
         this.handleSubmit = this.handleSubmit.bind(this)
     }
 
-    async componentDidMount() {
-        if (this.state.page_type === 'Add') {
-            this.setState({
-                name: "",
-                role: "",
-                email: "",
-                phone_number: "",
-            })
-        } else {
+    componentDidMount() {
+        if (this.state.page_type === 'Update') {
             const link =  API + '/UserManagement/get-Users/?user_id=' + selected_id
 
             let data = {
@@ -39,8 +30,8 @@ class Form extends React.Component {
                     'Content-Type': 'application/json',
                 }
             }
-
-            await fetch(link, data)
+            setTimeout(() => {
+                fetch(link, data)
                 .then(response => response.json())
                 .then(response => {
                     this.setState({
@@ -49,13 +40,27 @@ class Form extends React.Component {
                         email: response.email,
                         role: response.role,
                         phone_number: response.phone_number,
-                        token: response.token,
-                        first_time: response.first_time,
-                        is_deleted: response.is_deleted
                     })
-                }).catch(error => {
-                console.log(error)
+                })
+                .then(
+                    setTimeout(() => {
+                        this.setState({done: true})
+                    }, 600))
+                .catch(error => {
+                    console.log(error)
+                })
+            }, 700)
+
+        } else {
+            this.setState({
+                name: "",
+                role: "Student",
+                email: "",
+                phone_number: "",
+                done: true,
+                page_type: "Add"
             })
+            
         }
     }
 
@@ -75,12 +80,14 @@ class Form extends React.Component {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(this.state)
+                body: JSON.stringify({
+                    name: this.state.name,
+                    email:  this.state.email,
+                    role:  this.state.role,
+                    phone_number:  this.state.phone_number
+                })
             }
-
-
             fetch(link,data)
-            .then()
             .catch(error => {console.log(error)})
             this.props.history.push('/admin/users')
         } else {
@@ -95,7 +102,6 @@ class Form extends React.Component {
             }
 
             fetch(link, data)
-            .then()
             .catch(error => {console.log(error)})
             this.props.history.push('/admin/users')
         }
@@ -105,20 +111,21 @@ class Form extends React.Component {
             email: "",
             role: "",
             phone_number: "",
-            token: "",
-            first_time: false,
-            is_deleted: false,
         })
         window.location.reload();
     }
 
     render() {
         return(
+            <div>
+            {!this.state.done ? <h2></h2> : 
             <FormComponent
             handleChange = {this.handleChange}
             handleSubmit = {this.handleSubmit}
             data = {this.state}
             />
+            }
+            </div>
         )
     }
 

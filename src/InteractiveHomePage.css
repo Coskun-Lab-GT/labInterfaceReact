@@ -1,0 +1,22 @@
+/* h1, h2 {
+  text-align: center;
+  border-bottom-style: groove;
+  padding-bottom: 20px;
+} */
+
+#lab {
+    margin-top: 70px;
+    text-align: center;
+    font-size: 130px;
+    text-shadow: 3px 3px #8C7C7C;
+}
+
+#qotd {
+    font: italic small-caps bold 30px cursive;
+    text-align: center;
+    border-radius: 25px;
+    border-color: lightblue;
+    border-style: solid;
+    padding: 15px;
+    background-color: lightblue;
+}

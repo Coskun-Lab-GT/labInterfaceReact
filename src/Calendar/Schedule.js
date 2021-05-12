@@ -75,12 +75,20 @@ class Schedule extends React.Component {
         this.flag = false;
         var items = e.result.items;
         var scheduleData = [];
+        var cancelledData = [];
+
+        
         if (items.length > 0) {
           for (var i = 0; i < items.length; i++) {
+            if (items[i].status != "cancelled") {
             var event = items[i];
             var when = event.start.dateTime;
             var start = event.start.dateTime;
             var end = event.end.dateTime;
+            var rec = undefined;
+        if (!isNullOrUndefined(event.recurrence)) {
+          rec = event.recurrence[0].split(':')[1];
+        }
             if (!when) {
               when = event.start.date;
               start = event.start.date;
@@ -89,31 +97,73 @@ class Schedule extends React.Component {
             scheduleData.push({
               Id: event.id,
               Subject: event.summary,
-              Location:event.location,
-              Description: event.description,
               StartTime: new Date(start),
               EndTime: new Date(end),
+              RecurrenceRule: rec,
               IsAllDay: !event.start.dateTime
             });
+          } else {
+            cancelledData.push({
+              Id: items[i].recurringEventId,
+              ExceptionDate: items[i].originalStartTime.dateTime
+            })
           }
         }
+      }
+      for (var j = 0; j < cancelledData.length; j++) {
+        for (var z = 0; z < scheduleData.length; z++) {
+          if (scheduleData[z].Id == cancelledData[j].Id) {
+            if (isNullOrUndefined(scheduleData[z].RecurrenceException)) {
+              var excDate = cancelledData[j].ExceptionDate.toISOString().split('.')[0] +"Z";
+              scheduleData[z].RecurrenceException = excDate.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
+            } else {
+              var excDate = cancelledData[j].ExceptionDate.toISOString().split('.')[0] +"Z";
+              var exceptionDate = scheduleData[z].RecurrenceException + "," + excDate.replace(/[`~!@#$%^&*()_|+\-=?;:'",.<>\{\}\[\]\\\/]/gi, '');
+              scheduleData[z].RecurrenceException = exceptionDate;
+            }
+          }
+        }
+      }
+
         e.result = scheduleData;
+        
       }
       onActionBegin(args) {
         if (args.requestType == "eventCreate") {
           args.cancel = true;
           var app = isNullOrUndefined(args.data[0]) ? args.data : args.data[0];
-          var resource = {
-            summary: app.Subject,
-            location: app.Location,
-            description:app.Description,
-            start: {
-              dateTime: app.StartTime
-            },
-            end: {
-              dateTime: app.EndTime
-            }
-          };
+          var resource;
+          if (!isNullOrUndefined(app.RecurrenceRule)) {
+            resource = {
+              summary: app.Subject,
+              location: app.Location,
+              start: {
+                dateTime: app.StartTime,
+                timeZone: "UTC"
+              },
+              end: {
+                dateTime: app.EndTime,
+                timeZone: "UTC"
+              },
+              recurrence: [
+                "RRULE:" + app.RecurrenceRule,
+              ]
+            };
+          } else {
+            resource = {
+              summary: app.Subject,
+              location: app.Location,
+              start: {
+                dateTime: app.StartTime,
+                timeZone: "UTC"
+              },
+              end: {
+                dateTime: app.EndTime,
+                timeZone: "UTC"
+              }
+            };
+          }
+
           window.gapi.client.load("calendar", "v3", function() {
             var request = window.gapi.client.calendar.events.insert({
               calendarId: "coskunlab2020@gmail.com", // use your Google calendar’s calendar id. 
@@ -128,18 +178,36 @@ class Schedule extends React.Component {
         if (args.requestType == "eventChange") {
           args.cancel = true;
           var app = isNullOrUndefined(args.data[0]) ? args.data : args.data[0];
-          var resource = {
-            id: app.Id,
-            summary: app.Subject,
-            location: app.Location,
-            description: app.Description,
-            start: {
-              dateTime: app.StartTime
-            },
-            end: {
-              dateTime: app.EndTime
-            }
-          };
+          if (!isNullOrUndefined(app.RecurrenceRule)) {
+            resource = {
+              summary: app.Subject,
+              location: app.Location,
+              start: {
+                dateTime: app.StartTime,
+                timeZone: "UTC"
+              },
+              end: {
+                dateTime: app.EndTime,
+                timeZone: "UTC"
+              },
+              recurrence: [
+                "RRULE:" + app.RecurrenceRule,
+              ]
+            };
+          } else {
+            resource = {
+              summary: app.Subject,
+              location: app.Location,
+              start: {
+                dateTime: app.StartTime,
+                timeZone: "UTC"
+              },
+              end: {
+                dateTime: app.EndTime,
+                timeZone: "UTC"
+              }
+            };
+          }
           window.gapi.client.load("calendar", "v3", function() {
             var request = window.gapi.client.calendar.events.update({
               calendarId: "coskunlab2020@gmail.com",
@@ -155,29 +223,58 @@ class Schedule extends React.Component {
         if (args.requestType == "eventRemove") {
           args.cancel = true;
           var app = isNullOrUndefined(args.data[0]) ? args.data : args.data[0];
-          var resource = {
-            id: app.Id,
-            summary: app.Subject,
-            location: app.Location,
-            description: app.Description,
-            start: {
-              dateTime: app.StartTime
-            },
-            end: {
-              dateTime: app.EndTime
-            }
-          };
-          window.gapi.client.load("calendar", "v3", function() {
-            var request = window.gapi.client.calendar.events.delete({
-              calendarId: "coskunlab2020@gmail.com",
-              eventId: resource.id
+          if (isNullOrUndefined(app.occurrence)) {
+            var resource = {
+              id: app.Id,
+              summary: app.Subject,
+              location: app.Location,
+              start: {
+                dateTime: app.StartTime
+              },
+              end: {
+                dateTime: app.EndTime
+              }
+            };
+            window.gapi.client.load("calendar", "v3", function () {
+              var request = window.gapi.client.calendar.events.delete({
+                calendarId: "coskunlab2020@gmail.com",
+                eventId: resource.id
+              });
+              request.execute(function () {
+                var sch = document.querySelector(".e-schedule").ej2_instances[0];
+                sch.refreshEvents();
+              });
             });
-            request.execute(function() {
-              var sch = document.querySelector(".e-schedule").ej2_instances[0];
-              sch.refreshEvents();
+          } else {
+            resource = {
+              recurringEventId: app.parent.Id,
+              originalStartTime: {
+                dateTime: app.occurrence.StartTime,
+                timeZone: "UTC"
+              },
+              start: {
+                dateTime: app.occurrence.StartTime,
+                timeZone: "UTC"
+              },
+              end: {
+                dateTime: app.occurrence.EndTime,
+                timeZone: "UTC"
+              },
+              status: "cancelled"
+            };
+            window.gapi.client.load("calendar", "v3", function () {
+              var request = window.gapi.client.calendar.events.insert({
+                calendarId: "coskunlab2020@gmail.com",
+                resource: resource
+              });
+              request.execute(function () {
+                var sch = document.querySelector(".e-schedule").ej2_instances[0];
+                sch.refreshEvents();
+              });
             });
-          });
+          }
         }
+
       }
       render() {
         return (
